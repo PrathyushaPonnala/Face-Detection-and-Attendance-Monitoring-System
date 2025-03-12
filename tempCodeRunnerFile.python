@@ -1,0 +1,60 @@
+import tkinter as tk
+from PIL import Image, ImageTk
+import cv2
+import os
+
+def capture_and_detect_faces():
+    # Initialize webcam
+    cap = cv2.VideoCapture(0)
+    # Load pre-trained Haar Cascade for face detection
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+    ret, frame = cap.read()
+    if ret:
+        # Convert to grayscale for face detection
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # Detect faces
+        faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+
+        # Draw rectangles around detected faces
+        for (x, y, w, h) in faces:
+            cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+
+        # Save the image with detection
+        cv2.imwrite("face_detected.jpg", frame)
+
+    cap.release()
+    cv2.destroyAllWindows()
+
+def display_background(image_path=None):
+    # Load the specified image path or default image
+    if image_path and os.path.exists(image_path):
+        bg_image_path = image_path
+    else:
+        bg_image_path = r"C:\Users\Sufiyan\Downloads\face detection.2"  # Default background
+
+    # Load the background image
+    bg_image = ImageTk.PhotoImage(Image.open(bg_image_path))
+
+    # Set the image as a label background
+    bg_label = tk.Label(root, image=bg_image)
+    bg_label.image = bg_image  # Keep a reference to prevent garbage collection
+    bg_label.place(relwidth=1, relheight=1)
+
+    # Add a welcome text label
+    text_label = tk.Label(root, text="Welcome to Attendance", font=("Arial", 20), bg="lightblue")
+    text_label.place(relx=0.5, rely=0.1, anchor="center")  # Centered at top
+
+# Main Tkinter window
+root = tk.Tk()
+root.title("Face Detection with Background")
+root.geometry("800x600")
+
+# Step 1: Capture and detect faces
+capture_and_detect_faces()
+
+# Step 2: Display the captured face detection image as the background
+display_background("face_detected.jpg")
+
+# Run the Tkinter main loop
+root.mainloop()
